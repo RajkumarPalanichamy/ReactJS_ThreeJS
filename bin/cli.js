@@ -1,9 +1,18 @@
 #!/usr/bin/env node
 
-const fs = require('fs-extra');
-const path = require('path');
+const { execSync } = require('child_process');
 const prompts = require('prompts');
 const chalk = require('chalk');
+
+const runCommand = command => {
+  try {
+    execSync(`${command}`, { stdio: 'inherit' });
+  } catch (e) {
+    console.error(`Failed to execute ${command}`, e);
+    return false;
+  }
+  return true;
+}
 
 async function init() {
   const response = await prompts({
@@ -14,34 +23,21 @@ async function init() {
   });
 
   const projectName = response.projectName;
-  const projectPath = path.resolve(process.cwd(), projectName);
+  const gitCheckoutCommand = `git clone --depth 1 https://github.com/RajkumarPalanichamy/reactjs_threejs ${projectName}`;
+  const installDepsCommand = `cd ${projectName} && npm install`;
 
-  console.log(chalk.blue(`Creating a new R3F app in ${projectPath}...`));
+  console.log(chalk.blue(`Cloning the repository with name ${projectName}`));
+  const checkedOut = runCommand(gitCheckoutCommand);
+  if(!checkedOut) process.exit(-1);
 
-  // Create project directories
-  const directories = ['bin', 'public', 'src'];
-  directories.forEach(dir => {
-    fs.mkdirSync(path.join(projectPath, dir), { recursive: true });
-  });
-
-  // Create empty files
-  const files = ['.gitignore', 'README.md'];
-  files.forEach(file => {
-    fs.writeFileSync(path.join(projectPath, file), '');
-  });
-
-  // Create package.json with basic configuration
-  const packageJson = {
-    name: projectName,
-    version: '0.1.0',
-    private: true
-  };
-  await fs.writeJSON(path.join(projectPath, 'package.json'), packageJson, { spaces: 2 });
+  console.log(chalk.blue(`Installing dependencies for ${projectName}`));
+  const installedDeps = runCommand(installDepsCommand);
+  if(!installedDeps) process.exit(-1);
 
   console.log(chalk.green('\nSuccess! Created', projectName));
-  console.log('\nProject structure has been created. Next steps:');
+  console.log('\nProject is ready! You can run:');
   console.log(chalk.cyan('\n  cd'), projectName);
-  console.log(chalk.cyan('  npm install'));
+  console.log(chalk.cyan('  npm start'));
   console.log('\nHappy coding!\n');
 }
 
