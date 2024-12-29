@@ -18,39 +18,31 @@ async function init() {
 
   console.log(chalk.blue(`Creating a new R3F app in ${projectPath}...`));
 
-  // Create project directory
-  fs.mkdirSync(projectPath, { recursive: true });
+  // Create project directories
+  const directories = ['bin', 'public', 'src'];
+  directories.forEach(dir => {
+    fs.mkdirSync(path.join(projectPath, dir), { recursive: true });
+  });
 
-  // Copy template files
-  await fs.copy(path.join(__dirname, '../template'), projectPath);
+  // Create empty files
+  const files = ['.gitignore', 'README.md'];
+  files.forEach(file => {
+    fs.writeFileSync(path.join(projectPath, file), '');
+  });
 
-  // Rename gitignore
-  await fs.move(
-    path.join(projectPath, 'gitignore'),
-    path.join(projectPath, '.gitignore'),
-    { overwrite: true }
-  );
-
-  // Update package.json
-  const packageJson = require(path.join(projectPath, 'package.json'));
-  packageJson.name = projectName;
+  // Create package.json with basic configuration
+  const packageJson = {
+    name: projectName,
+    version: '0.1.0',
+    private: true
+  };
   await fs.writeJSON(path.join(projectPath, 'package.json'), packageJson, { spaces: 2 });
 
   console.log(chalk.green('\nSuccess! Created', projectName));
-  console.log('\nInside that directory, you can run several commands:');
-  console.log(
-    chalk.cyan('\n  npm start'),
-    '\n    Starts the development server.'
-  );
-  console.log(
-    chalk.cyan('\n  npm run build'),
-    '\n    Bundles the app for production.'
-  );
-  console.log('\nWe suggest that you begin by typing:');
+  console.log('\nProject structure has been created. Next steps:');
   console.log(chalk.cyan('\n  cd'), projectName);
   console.log(chalk.cyan('  npm install'));
-  console.log(chalk.cyan('  npm start'));
-  console.log('\nHappy hacking!\n');
+  console.log('\nHappy coding!\n');
 }
 
 init().catch((err) => {
