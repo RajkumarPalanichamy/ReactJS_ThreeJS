@@ -1,0 +1,9 @@
+node_modules/
+bin/
+package-lock.json
+.git/
+.gitignore
+.github/
+test/
+examples/
+docs/ 
